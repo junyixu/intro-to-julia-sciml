@@ -2,6 +2,74 @@
 #import "@preview/cetz:0.2.2"
 #import "@preview/fletcher:0.4.4" as fletcher: node, edge
 #import "@preview/ctheorems:1.1.2": *
+#import "@preview/showybox:2.0.1": *
+#import "@preview/physica:0.9.3": *
+#show link: it => underline(stroke: (dash: "densely-dotted"), text(fill: eastern, it)) 
+
+
+#let showy-thm(
+  identifier,
+  head,
+  color: blue,
+  symbol: "♥",
+  ..showy-args,
+  supplement: auto,
+  base: "heading",
+  base_level: none,
+) = {
+  let showy-fmt(name, number, body, ..args) = {
+    showybox(
+      title-style: (
+        boxed-style: (
+          anchor: (
+            x: left, // https://github.com/Pablo-Gonzalez-Calderon/showybox-package/blob/081b596cbbaaa275e154eb982833ec7410d13c29/examples/examples.typ#L133
+            y: horizon
+          ),
+          radius: (top-left: 10pt, bottom-right: 10pt, rest: 0pt),
+        )
+      ),
+      title: {
+        head
+        number
+        if name != none {
+          [（#name）]
+        }
+      },
+      frame: (
+        border-color: color,
+        title-color: color.lighten(5%),
+        body-color: color.lighten(95%),
+        footer-color: color.lighten(80%),
+      ),
+      ..args.named(),
+      {
+        body
+        place(
+          bottom + right,
+          dy: 0pt + 5pt, // Account for inset of block
+          dx: 10pt + 0pt,
+          text(fill: color)[#symbol]
+        )
+      }
+    )
+  }
+  if supplement == auto {
+    supplement = head
+  }
+  thmenv(
+    identifier,
+    "heading",
+    none,
+    showy-fmt,
+  ).with(supplement: supplement)
+}
+
+#let theorem = showy-thm("theorem", "定理").with(numbering: "1.1")
+#let exercise = showy-thm("exercise", "Exercise ").with(numbering: "1.1")
+#let lemma = showy-thm("lemma ", "引理", color: rgb("#00a652"), symbol: "♣").with(numbering: "1.1")
+// #let lemma = showy-thm("lemma ", "引理", color: eastern).with(numbering: "1.1")
+#let proof = thmproof("proof", "Proof")
+
 
 // cetz and fletcher bindings for touying
 #let cetz-canvas = touying-reducer.with(reduce: cetz.canvas, cover: cetz.draw.hide.with(bounds: true))
@@ -20,11 +88,11 @@
 // Global information configuration
 #let s = (s.methods.info)(
   self: s,
-  title: [Title],
-  subtitle: [Subtitle],
-  author: [Authors],
-  date: datetime.today(),
-  institution: [Institution],
+  title: [Julia Language  and  Scientific Machine Learning],
+  subtitle: [From a user's perspective],
+  author: [Junyi Xu],
+  date: [September 21, 2024],
+  institution: [Department 52],
 )
 
 // Pdfpc configuration
@@ -44,6 +112,31 @@
     direction: "inward",
   ),
 ))
+
+#let mybox(name, color: navy, body, ..args) = showybox(
+  frame: (
+      border-color: color,
+      title-color: color.lighten(5%),
+      body-color: color.lighten(95%),
+      footer-color: color.lighten(80%),
+  ),
+  title: {
+    if name != none {
+      [#name]
+    }
+  },
+  title-style: (
+    // color: black,
+    weight: "regular",
+    align: center
+  ),
+  shadow: (
+    offset: 3pt,
+  ),
+  ..args.named(),
+  body
+)
+
 
 // Theroems configuration by ctheorems
 #show: thmrules.with(qed-symbol: $square$)
@@ -68,168 +161,163 @@
 #let (slide, empty-slide) = utils.slides(s)
 #show: slides
 
-= Animation
 
-== Simple Animation
+= Julia Lang
 
-We can use `#pause` to #pause display something later.
+== Hey, Have you heard of Julia Lang?
 
-#pause
+#slide(composer: (1fr, 1fr))[
+  #image("./img/同学你听过.png", width: 240pt)
+  *Julia is a high level language for high performance computing.*
+][
+  #mybox(
+    [Features]
+  // footer: "Information extracted from a well-known public encyclopedia"
+)[
+- Generic Programming
+- Multiple Dispatch
+- Operator overloading
+- Native Differential Programming
+- Metaprogramming #emoji.face
+- Call Python and R
+- …
+  #v(10pt)
+"*We are #link("https://julialang.org/blog/2012/02/why-we-created-julia/")[greedy]*".
 
-Just like this.
+]]
 
-#meanwhile
+== Julia 的缺点
 
-Meanwhile, #pause we can also use `#meanwhile` to #pause display other content synchronously.
-
-#speaker-note[
-  + This is a speaker note.
-  + You won't see it unless you use `#let s = (s.math.show-notes-on-second-screen)(self: s, right)`
+#slide(composer: (1fr, 1fr, 1fr))[
+  #mybox(
+  "Features"
+  // footer: "Information extracted from a well-known public encyclopedia"
+)[
+  If you are not strong enough, features bug you.
+  e.g. \
+  runtime-dispatch
+  #image("./img/年轻人你渴望力量吗.png", width: 85pt)
+]
+][
+  #mybox(
+  "特定情况比较慢"
+  // footer: "Information extracted from a well-known public encyclopedia"
+)[
+  - 首次调用延迟(JIT)
+  - 编译开销大，适合长时间运行的任务
+  - 动态语言，碰到类型不稳定的代码会很慢
+  #v(30pt)
+]
+][
+  #mybox(
+  "Niche: 科学计算"
+  // footer: "Information extracted from a well-known public encyclopedia"
+)[
+  - 缺乏原生 GUI 支持
+  - 移动开发支持薄弱
+  #v(164pt)
+]
 ]
 
+= SciML
 
-== Complex Animation - Mark-Style
+== What's SciML
 
-At subslide #utils.touying-wrapper((self: none) => str(self.subslide)), we can
+=== Key Components
 
-use #uncover("2-")[`#uncover` function] for reserving space,
+#line(length: 100%)
 
-use #only("2-")[`#only` function] for not reserving space,
+- *Physics-based Modeling*
+- *Data-driven Machine Learning*
+- The Universal Approximation Theorem
+- Enhanced Interpretability
+- Efficient Handling of Complex Systems
 
-#alternatives[call `#only` multiple times \u{2717}][use `#alternatives` function #sym.checkmark] for choosing one of the alternatives.
+=== Key Technologies
 
+#line(length: 100%)
 
-== Complex Animation - Callback-Style
+*Automatic Differentiation*:
+Leverage #link("https://enzyme.mit.edu/julia/stable/")[Enzyme.jl] or #link("https://github.com/FluxML/Zygote.jl")[Zygote.jl] for auto-diff and faster scientific computing
 
-#slide(repeat: 3, self => [
-  #let (uncover, only, alternatives) = utils.methods(self)
+== How do you solve ODEs
 
-  At subslide #self.subslide, we can
-
-  use #uncover("2-")[`#uncover` function] for reserving space,
-
-  use #only("2-")[`#only` function] for not reserving space,
-
-  #alternatives[call `#only` multiple times \u{2717}][use `#alternatives` function #sym.checkmark] for choosing one of the alternatives.
-])
-
-
-== Math Equation Animation
-
-Touying equation with `pause`:
-
-#touying-equation(`
-  f(x) &= pause x^2 + 2x + 1  \
-        &= pause (x + 1)^2  \
-`)
-
-#meanwhile
-
-Here, #pause we have the expression of $f(x)$.
-
-#pause
-
-By factorizing, we can obtain this result.
-
-
-== CeTZ Animation
-
-CeTZ Animation in Touying:
-
-#cetz-canvas({
-  import cetz.draw: *
-  
-  rect((0,0), (5,5))
-
-  (pause,)
-
-  rect((0,0), (1,1))
-  rect((1,1), (2,2))
-  rect((2,2), (3,3))
-
-  (pause,)
-
-  line((0,0), (2.5, 2.5), name: "line")
-})
-
-
-== Fletcher Animation
-
-Fletcher Animation in Touying:
-
-#fletcher-diagram(
-  node-stroke: .1em,
-  node-fill: gradient.radial(blue.lighten(80%), blue, center: (30%, 20%), radius: 80%),
-  spacing: 4em,
-  edge((-1,0), "r", "-|>", `open(path)`, label-pos: 0, label-side: center),
-  node((0,0), `reading`, radius: 2em),
-  edge((0,0), (0,0), `read()`, "--|>", bend: 130deg),
-  pause,
-  edge(`read()`, "-|>"),
-  node((1,0), `eof`, radius: 2em),
-  pause,
-  edge(`close()`, "-|>"),
-  node((2,0), `closed`, radius: 2em, extrude: (-2.5, 0)),
-  edge((0,0), (2,0), `close()`, "-|>", bend: -40deg),
-)
-
-= Theroems
-
-== Prime numbers
-
-#definition[
-  A natural number is called a #highlight[_prime number_] if it is greater
-  than 1 and cannot be written as the product of two smaller natural numbers.
-]
-#example[
-  The numbers $2$, $3$, and $17$ are prime.
-  @cor_largest_prime shows that this list is not exhaustive!
-]
-
-#theorem("Euclid")[
-  There are infinitely many primes.
-]
-#proof[
-  Suppose to the contrary that $p_1, p_2, dots, p_n$ is a finite enumeration
-  of all primes. Set $P = p_1 p_2 dots p_n$. Since $P + 1$ is not in our list,
-  it cannot be prime. Thus, some prime factor $p_j$ divides $P + 1$.  Since
-  $p_j$ also divides $P$, it must divide the difference $(P + 1) - P = 1$, a
-  contradiction.
-]
-
-#corollary[
-  There is no largest prime number.
-] <cor_largest_prime>
-#corollary[
-  There are infinitely many composite numbers.
-]
-
-#theorem[
-  There are arbitrarily long stretches of composite numbers.
-]
-
-#proof[
-  For any $n > 2$, consider $
-    n! + 2, quad n! + 3, quad ..., quad n! + n #qedhere
+#slide[
+  #image("./img/uniform_rod.png", width: 340pt)
+  *A uniform rod of mass $M$ and length $l$ is hinged at one end.*
+][
+  According to the #link("https://en.wikipedia.org/wiki/Parallel_axis_theorem")[parallel axis theorem], the moment of inertia $J'$:
+  $
+  J' = J + M dot l^2.
+  $
+  Hamiltonian:
+  $
+  H = 1/2 J' dot(theta)^2  - M g l sin theta.
+  $
+  ODEs:
+  $
+  dot(theta) = pdv(H, p) = pdv(H, J' theta), quad dot(p) = -pdv(H, theta).
   $
 ]
 
+== How do you solve ODEs using Julia
+```julia
+using OrdinaryDiffEq
 
-= Others
+function odejoint!(dy,y,α,t) # α = [J', Mgl]
+    dy[1] = y[2]/α[1] # Generalized coordinates q: θ
+    dy[2] = α[2]*cos(y[1]) # Generalized momentum p: J' dθ/dt
+end
+```
 
-== Side-by-side
-
-#slide(composer: (1fr, 1fr))[
-  First column.
+#alternatives[
+```julia
+prob = ODEProblem(odejoint!, y0, tspan, α) # def your y0, α
+```
 ][
-  Second column.
+```julia
+prob = ODEProblem(odejoint!, y0, tspan, α) # def your y0, α
+```
 ]
 
+```julia
+sol = solve(prob)
+```
 
-== Multiple Pages
+== Change the algorithm
+```julia
+using OrdinaryDiffEq
 
-#lorem(200)
+function odejoint!(dy,y,α,t) # α = [J', Mgl]
+    dy[1] = y[2]/α[1] # Generalized coordinates q: θ
+    dy[2] = α[2]*cos(y[1]) # Generalized momentum p: J' dθ/dt
+end
+```
+#exercise[
+  Use a symplectic integrator to solve the above problem.
+]
+```julia
+sol = solve(prob)
+```
 
+= Showcase
+
+== Code
+  #mybox(
+    [Exmaples]
+  // footer: "Information extracted from a well-known public encyclopedia"
+)[
+Let's play around with #link("https://git.lug.ustc.edu.cn/junyixu/intro-to-julia-sciml")[PINNs in Jupyter].
+]
+
+= Summary
+
+== Summary
+
+- Machine learning and differential equations: converging to describe nonlinear world
+- Julia ecosystem: integrating differential equation and deep learning packages
+- Easy to tweak and customize loss functions
+- Comprehensive solver access: ODEs, SDEs, DAEs, DDEs, PDEs, and more
 
 // appendix by freezing last-slide-number
 #let s = (s.methods.appendix)(self: s)
@@ -238,5 +326,13 @@ Fletcher Animation in Touying:
 == Appendix
 
 #slide[
-  Please pay attention to the current slide number.
+  === References
+  - #link("https://julialang.org/blog/2019/01/fluxdiffeq/")[DiffEqFlux.jl – A Julia Library for Neural Differential Equations]
+  - #link("https://lux.csail.mit.edu/dev/introduction/overview")[Lux.jl]
+  === Useful Books
+  - First Semester in Numerical Analysis  with Julia
+  - Numerical Linear Algebra with Julia
+  - Design Patterns and Best Practices with julia
+  - Statistics With Julia
+  - Data Science with Julia (2019)
 ]
